@@ -60,3 +60,26 @@ export function formatDigitNumber(num: number | string) {
 
   return [digit, flo.slice(0, 5)].join(".");
 }
+
+interface FormatPriceParams {
+  precision?: number;
+  prefix?: string;
+}
+
+export function formatPrice(num: number, opts: FormatPriceParams = {}) {
+  const { precision = 2, prefix = "" } = opts;
+  let ret = "";
+  const sym = num > 0 ? "+" : "-";
+  num = Math.abs(num);
+  if (num >= 1e9) {
+    ret = (num / 1e9).toFixed(precision) + "B";
+  } else if (num >= 1e6) {
+    ret = (num / 1e6).toFixed(precision) + "M";
+  } else if (num >= 1e3) {
+    ret = (num / 1e3).toFixed(precision) + "K";
+  } else {
+    ret = num.toFixed(precision).toString();
+  }
+
+  return `${sym}${prefix}${ret}`;
+}
