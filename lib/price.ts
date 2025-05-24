@@ -22,8 +22,28 @@ function trimDecimal(num: string) {
   return decimalPart;
 }
 
-export function formatDigitNumber(num: number | string) {
-  if (num === 0) return "--";
+interface FormatDigitNumberOptions {
+  zeroFormat?: string;
+  suffixZeroLen?: number;
+}
+
+/**
+ * Formats a number or string into a specific digit format.
+ *
+ * @param {number | string} num - The number to format. Can be a number or a string representation of a number.
+ * @param {FormatDigitNumberOptions} opts - Options for formatting the number.
+ * @param {string} opts.zeroFormat - The format to return when the number is zero. Defaults to "--" if not provided.
+ * @returns {string} The formatted number as a string.
+ */
+export function formatDigitNumber(
+  num: number | string,
+  opts?: FormatDigitNumberOptions,
+) {
+  if (Number.isNaN(num)) {
+    throw new Error("num is valid number");
+  }
+  const { zeroFormat, suffixZeroLen } = opts || {};
+  if (num === 0) return zeroFormat ?? "--";
   // 将科学计数法表示的数字转换为普通小数形式
   num = num.toString().includes("e")
     ? parseFloat(String(num)).toFixed(22)
@@ -46,11 +66,15 @@ export function formatDigitNumber(num: number | string) {
     const truncatedNonZeroPart = nonZeroPart.slice(0, 5);
     const subscriptZeroCount = numberToSubscript(zeroCount);
 
-    return (
+    let ret =
       num.slice(0, decimalIndex + 1) +
       `0${subscriptZeroCount}` +
-      trimDecimal(truncatedNonZeroPart)
-    );
+      trimDecimal(truncatedNonZeroPart);
+    if (typeof suffixZeroLen === "number") {
+      ret.padEnd(zeroCount, "0");
+    }
+
+    return ret;
   }
 
   const [digit, flo] = num.split(".");
